@@ -7,7 +7,15 @@ use crate::parser::xsd_elements::{ElementType, XsdNode};
 
 pub fn parse_schema<'input>(schema: &Node<'_, 'input>) -> RsFile<'input> {
     RsFile {
-        name: "".into(),
+        name: schema
+            .namespaces()
+            .iter()
+            .find_map(|a| if a.name() == None {
+                Some(a.uri()) 
+                } else {
+                    None
+                }
+            ).map_or("".to_string(), |a| a.to_string() ),
         namespace: None,
         target_ns: target_namespace(schema).cloned(),
         xsd_ns: schema
@@ -30,6 +38,13 @@ pub fn parse_schema<'input>(schema: &Node<'_, 'input>) -> RsFile<'input> {
             .filter(|n| n.is_element() && n.xsd_type() == ElementType::AttributeGroup)
             .map(|node| parse_node(&node, schema))
             .collect(),
+        prefixes : schema
+        .namespaces()
+        .iter()
+        .rev()
+        .filter(|a| a.uri() != "http://www.w3.org/2001/XMLSchema" && a.name() != None)
+        .cloned()
+        .collect()
     }
 }
 
