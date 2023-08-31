@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use roxmltree::Node;
+use roxmltree::{Node, NodeType};
 
 use crate::parser::node_parser::parse_node;
 use crate::parser::types::{RsEntity, Struct, StructField, TypeModifier};
@@ -9,6 +9,15 @@ use crate::parser::xsd_elements::{ElementType, XsdNode};
 
 pub fn parse_sequence(sequence: &Node, parent: &Node) -> RsEntity {
     let name = get_parent_name(sequence);
+
+    // check if a nested sequence starts here
+    // this is seen in the xmldsig-core-schema_xsd in the DSAKeyValueType
+    // It does look a bit strange
+    if let Some(sequence) = sequence.children().find(|c| c.xsd_type() == ElementType::Sequence  ) {
+        return parse_sequence(&sequence, parent)
+    } 
+
+
     RsEntity::Struct(Struct {
         name: name.into(),
         comment: get_documentation(parent),
@@ -33,7 +42,7 @@ fn elements_to_fields(sequence: &Node, parent_name: &str) -> Vec<StructField> {
                 en.name = format!("{}Choice", parent_name);
                 enum_to_field(en)
             }
-            _ => unreachable!("\nError: {:?}\n{:?}", n, parse_node(&n, sequence)),
+            _ => unreachable!("\nError: {:?}\n{:?}\nParent:{}", n, parse_node(&n, sequence),parent_name),
         })
         .collect()
 }
