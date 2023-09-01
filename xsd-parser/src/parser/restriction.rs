@@ -37,6 +37,7 @@ fn simple_type_restriction(node: &Node) -> RsEntity {
     let facets = facets(node);
 
     if is_simple_enumerations(node) {
+        
         let cases = cases(facets.as_ref());
         if !cases.is_empty() {
             return RsEntity::Enum(Enum {
@@ -47,6 +48,7 @@ fn simple_type_restriction(node: &Node) -> RsEntity {
                 ..Default::default()
             });
         }
+    } else {
     };
 
     RsEntity::TupleStruct(TupleStruct {
@@ -139,7 +141,7 @@ fn is_simple_enumeration(node: &Node) -> bool {
     let val = node
         .attr_value()
         .expect("Value required for xsd:enumeration");
-    !val.is_empty() && val.chars().all(|c| c.is_alphanumeric() || c == '-')
+    !val.is_empty() && val.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_')
 }
 
 #[cfg(test)]
