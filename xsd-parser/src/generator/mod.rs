@@ -40,18 +40,47 @@ pub struct Generator<'input> {
     pub import_gen: Option<Box<dyn ImportGenerator>>,
 }
 
+pub fn get_module_name<'input>(schema: &RsFile<'input>) -> String {
+    let module_name = if let Some(namespace) = &schema.target_ns {
+        namespace.uri()
+    } else {
+        schema.name.as_ref()
+    };
+    namespace_to_module_name(module_name)
+}
+
+pub fn namespace_to_module_name(ns:&str) -> String {
+
+    // TODO: handle this differently?.
+    let ns = if ns == "http://www.w3.org/2000/09/xmldsig#" {
+        "www_w3_org_2000_09_xmldsig"
+    } else {
+        ns
+    };
+
+    ns.trim_start_matches("urn:")
+            .replace(':', "_")
+            .replace('#', "")
+        
+}
+
 impl<'input> Generator<'input> {
     pub fn generate_rs_file(&self, schema: &RsFile<'input>) -> String {
         *self.target_ns.borrow_mut() = schema.target_ns.clone();
         *self.xsd_ns.borrow_mut() = schema.xsd_ns.clone();
-        schema
+        
+        let module_name = get_module_name(schema);
+
+        let module_content: String = schema
             .types
             .iter()
-            .map(|entity| self.generate(entity))
-            .collect()
+            .map(|entity| self.generate(Some(schema),entity))
+            .collect();
+
+        format!("pub mod {module_name} {{\nuse super::*;\n\n{module_content}\n}}")
     }
 
-    pub fn generate(&self, entity: &RsEntity) -> String {
+    pub fn generate(&self, schema: Option<&RsFile<'_>>, entity: &RsEntity) -> String {
         use RsEntity::*;
         match entity {
             TupleStruct(ts) => self.tuple_struct_gen.as_ref().unwrap().generate(ts, self),
@@ -60,7 +89,20 @@ impl<'input> Generator<'input> {
             Enum(en) => self.enum_gen.as_ref().unwrap().generate(en, self),
             EnumCase(ec) => self.enum_case_gen().generate(ec, self),
             Alias(al) => self.alias_gen.as_ref().unwrap().generate(al, self),
-            Import(im) => self.import_gen.as_ref().unwrap().generate(im, self),
+            Import(im) => {
+                let im = if let Some(schema) = schema {
+                    let (module_name,alias) = schema.get_import_module_and_alias(&im.name).unwrap();
+                crate::parser::types::Import {
+                    name: alias,
+                    location: format!("super::{module_name}"),
+                    comment: None,
+                }
+                } else {
+                    im.to_owned()
+                };
+                
+                self.import_gen.as_ref().unwrap().generate(&im, self)
+            },
         }
     }
 

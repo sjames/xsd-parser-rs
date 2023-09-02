@@ -64,26 +64,26 @@ pub trait EnumGenerator {
 
     fn macros(&self, entity: &Enum, gen: &Generator) -> Cow<'static, str> {
         if entity.source == EnumSource::Union {
-            return "#[derive(PartialEq, Debug, UtilsUnionSerDe)]".into();
+            return "#[derive(PartialEq, Debug)]".into();
         }
 
-        let derives = "#[derive(PartialEq, Debug, YaSerialize, YaDeserialize)]";
+        let derives = "#[derive(PartialEq, Debug)]";
         let tns = gen.target_ns.borrow();
         match tns.as_ref() {
             Some(tn) => match tn.name() {
                 Some(name) => format!(
-                    "{derives}#[yaserde(prefix = \"{prefix}\", namespace = \"{prefix}: {uri}\")]\n",
+                    "{derives}//#[yaserde(prefix = \"{prefix}\", namespace = \"{prefix}: {uri}\")]\n",
                     derives = derives,
                     prefix = name,
                     uri = tn.uri()
                 ),
                 None => format!(
-                    "{derives}#[yaserde(namespace = \"{uri}\")]\n",
+                    "{derives}//#[yaserde(namespace = \"{uri}\")]\n",
                     derives = derives,
                     uri = tn.uri()
                 ),
             },
-            None => format!("{derives}#[yaserde()]\n", derives = derives),
+            None => format!("{derives}//#[yaserde()]\n", derives = derives),
         }
         .into()
     }

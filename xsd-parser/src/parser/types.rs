@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 
+use crate::generator::{namespace_to_module_name};
 use crate::parser::constants::tag;
 use crate::parser::xsd_elements::FacetType;
 use roxmltree::Namespace;
@@ -14,6 +15,17 @@ pub struct RsFile<'input> {
     pub target_ns: Option<Namespace<'input>>,
     pub xsd_ns: Option<Namespace<'input>>,
     pub prefixes : Vec<Namespace<'input>>
+}
+
+impl RsFile<'_> {
+    pub fn get_import_module_and_alias(&self,namespace_uri: &str) -> Option<(String,String)> {
+        self.prefixes.iter().find_map(|ns| if ns.uri() == namespace_uri {
+            let module_name = namespace_to_module_name(ns.uri());
+            Some((module_name,ns.name().unwrap().to_owned()))
+        } else {
+            None
+        } )
+    }
 }
 
 #[derive(Debug, Default, Clone)]

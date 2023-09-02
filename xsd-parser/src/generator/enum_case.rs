@@ -50,7 +50,7 @@ pub trait EnumCaseGenerator {
         let (prefix, field_name) = split_name(entity.name.as_str());
         match prefix {
             Some(p) => format!(
-                "{indent}#[yaserde(prefix = \"{prefix}\", rename = \"{rename}\")]\n",
+                "{indent}//#[yaserde(prefix = \"{prefix}\", rename = \"{rename}\")]\n",
                 indent = gen.base().indent(),
                 prefix = p,
                 rename = field_name
@@ -60,7 +60,7 @@ pub trait EnumCaseGenerator {
                     "".into()
                 } else {
                     format!(
-                        "{indent}#[yaserde(rename = \"{rename}\")]\n",
+                        "{indent}//#[yaserde(rename = \"{rename}\")]\n",
                         indent = gen.base().indent(),
                         rename = field_name
                     )

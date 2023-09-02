@@ -41,7 +41,7 @@ pub trait BaseGenerator {
     fn join_subtypes(&self, subtypes: &[RsEntity], gen: &Generator) -> String {
         subtypes
             .iter()
-            .map(|f| gen.generate(f))
+            .map(|f| gen.generate(None,f))
             .collect::<Vec<String>>()
             .join("\n")
     }

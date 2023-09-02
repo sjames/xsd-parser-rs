@@ -126,6 +126,6 @@ mod test {
         test_generator_state(&gen);
 
         let ts = RsEntity::TupleStruct(TupleStruct::default());
-        assert_eq!(gen.generate(&ts), "Tuple struct");
+        assert_eq!(gen.generate(None,&ts), "Tuple struct");
     }
 }
