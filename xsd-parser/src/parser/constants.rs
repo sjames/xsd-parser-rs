@@ -16,4 +16,6 @@ pub mod attribute {
     pub const MIN_OCCURS: &str = "minOccurs";
     pub const MAX_OCCURS: &str = "maxOccurs";
     pub const MEMBER_TYPES: &str = "memberTypes";
+    pub const ABSTRACT: &str = "abstract";
+    pub const SUBSTITUTION_GROUP: &str = "substitutionGroup";
 }

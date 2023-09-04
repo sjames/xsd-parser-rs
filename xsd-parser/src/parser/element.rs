@@ -126,7 +126,7 @@ fn parse_global_element(node: &Node) -> RsEntity {
             comment: get_documentation(node),
             subtypes: vec![],
         });
-    }
+    } 
 
     let content_node = node
         .children()
@@ -136,6 +136,7 @@ fn parse_global_element(node: &Node) -> RsEntity {
     if let Some(content) = content_node {
         let mut content_entity = parse_node(&content, node);
         content_entity.set_name(name);
+        content_entity.set_global();
         return content_entity;
     }
 

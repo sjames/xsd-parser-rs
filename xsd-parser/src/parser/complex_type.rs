@@ -21,11 +21,11 @@ const AVAILABLE_CONTENT_TYPES: [ElementType; 6] = [
 ];
 
 pub fn parse_complex_type(node: &Node, parent: &Node) -> RsEntity {
-    let name = if parent.xsd_type() == ElementType::Schema {
-        node.attr_name()
-            .expect("Name required if the complexType element is a child of the schema element")
+    let (name, is_global) = if parent.xsd_type() == ElementType::Schema {
+        (node.attr_name()
+            .expect("Name required if the complexType element is a child of the schema element"),true)
     } else {
-        get_parent_name(node)
+        (get_parent_name(node),false)
     };
 
     let mut fields = attributes_to_fields(node);
@@ -51,6 +51,7 @@ pub fn parse_complex_type(node: &Node, parent: &Node) -> RsEntity {
             comment: get_documentation(node),
             subtypes: vec![],
             name: name.to_string(),
+            is_global,
         });
     }
     let content_node = content.unwrap();
@@ -75,6 +76,7 @@ pub fn parse_complex_type(node: &Node, parent: &Node) -> RsEntity {
                 comment: get_documentation(node),
                 fields: RefCell::new(fields),
                 attribute_groups: RefCell::new(attribute_groups_to_aliases(node)),
+                is_global,
             })];
         }
         _ => (),

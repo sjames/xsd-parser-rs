@@ -35,6 +35,7 @@ pub struct Struct {
     pub fields: RefCell<Vec<StructField>>,
     pub attribute_groups: RefCell<Vec<Alias>>,
     pub subtypes: Vec<RsEntity>,
+    pub is_global : bool, // If this struct is a global struct
 }
 
 impl Struct {
@@ -254,6 +255,14 @@ impl RsEntity {
             Alias(al) => al.name = name.to_string(),
             StructField(sf) => sf.name = name.to_string(),
             Import(im) => im.name = name.to_string(),
+        }
+    }
+
+    pub fn set_global(&mut self) {
+        use RsEntity::*;
+        match self {
+            Struct(s) => s.is_global = true,
+            _ => {}
         }
     }
 
